@@ -4,6 +4,8 @@ import Login from './pages/Auth/Login';
 import Home from './pages/Auth/Dashboard/Home';
 import Income from './pages/Auth/Dashboard/Income';
 import Expense from './pages/Auth/Dashboard/Expense';
+import UploadImage from './components/layouts/UploadImage';
+import { UserProvider } from './context/userContext';
 
 
 
@@ -31,14 +33,17 @@ const App = () => {
   return (
     <div>
       <Router>
-        <Routes>
-          <Route path="/" element={<Root />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Home />} />
-          <Route path="/income" element={<Income />} />
-          <Route path="/expense" element={<Expense />} />
-        </Routes>
+        <UserProvider>
+          <Routes>
+            <Route path="/" element={<Root />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Home />} />
+            <Route path="/income" element={<Income />} />
+            <Route path="/expense" element={<Expense />} />
+            <Route path="/upload-image" element={<UploadImage />} />
+          </Routes>
+        </UserProvider>
       </Router>
     </div>
   );
