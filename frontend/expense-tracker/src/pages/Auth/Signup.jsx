@@ -1,8 +1,11 @@
  import React, { useState } from 'react';
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
-import Input from "../../components/Inputs/Input";
+import Input from "../../components/inputs/input";
 import { validateEmail } from "../../utils/helper";
+import { API_PATHS } from "../../utils/apiPaths";
+import axiosInstance from "../../utils/axiosinstance";
+import { toast } from 'react-hot-toast';
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -13,7 +16,7 @@ const SignUp = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = {};
 
@@ -22,28 +25,38 @@ const SignUp = () => {
     if (password.length < 6) validationErrors.password = "Password must be at least 6 characters";
     if (password !== confirmPassword) validationErrors.confirmPassword = "Passwords don't match";
 
-    const users = JSON.parse(localStorage.getItem('mockUsers') || '[]');
-    const userExists = users.find((u) => u.email === email);
-    if (userExists) validationErrors.email = "Email is already registered";
-
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    const newUser = {
-      fullName,
-      email,
-      password,
-      profilePic: profilePic ? URL.createObjectURL(profilePic) : null,
-    };
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        fullName,
+        email,
+        password
+      });
 
-    users.push(newUser);
-    localStorage.setItem('mockUsers', JSON.stringify(users));
-    localStorage.setItem('token', 'mock-token');
-    localStorage.setItem('user', JSON.stringify(newUser));
+      // Save token and user data
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify({
+        id: response.data.id,
+        fullName: response.data.fullName,
+        email: response.data.email
+      }));
 
-    navigate('/dashboard');
+      toast.success('Account created successfully!');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Signup error:', error);
+      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+      
+      if (errorMessage.includes('already exists')) {
+        setErrors({ email: 'Email is already registered' });
+      } else {
+        toast.error(errorMessage);
+      }
+    }
   };
 
   return (

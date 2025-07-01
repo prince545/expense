@@ -2,7 +2,7 @@
 import DashboardLayout from "../../../components/layouts/DashboardLayout";
 import { useUserAuth } from "../../../hooks/useUserAuth";
 import { useNavigate } from "react-router-dom";
-import { API_PATHS } from "../../../utils/apiPaths";
+import { DASHBOARD } from "../../../utils/apiPaths";
 import axiosInstance from "../../../utils/axiosinstance";
 import InfoCard from "../../../components/Cards/InfoCard";
 import { LuHandCoins, LuWalletMinimal } from "react-icons/lu";
@@ -21,17 +21,53 @@ const Home = () => {
       return;
     }
 
-    // Simulate loading and set mock data
-    setTimeout(() => {
+    fetchDashboardData();
+  }, [navigate]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(DASHBOARD);
+      setDashboardData(response.data);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      // Fallback to mock data if API fails
       const mockData = {
         totalBalance: 15000,
         totalIncome: 22000,
         totalExpenses: 7000,
+        recentTransactions: [
+          {
+            _id: '1',
+            type: 'income',
+            amount: 5000,
+            source: 'Salary',
+            date: new Date(),
+            icon: '💰'
+          },
+          {
+            _id: '2',
+            type: 'expense',
+            amount: 120,
+            title: 'Grocery Shopping',
+            category: 'Food',
+            date: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          },
+          {
+            _id: '3',
+            type: 'expense',
+            amount: 50,
+            title: 'Gas',
+            category: 'Transport',
+            date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+          }
+        ]
       };
       setDashboardData(mockData);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, [navigate]);
+    }
+  };
 
   return (
     <DashboardLayout activeMenu="Dashboard">
@@ -85,7 +121,7 @@ const Home = () => {
     <div className="mt-8">
       <RecentTransactions
         transactions={dashboardData.recentTransactions}
-        onSeeMore={() => navigate("/expense")}
+        onSeeMore={() => navigate("/income")}
       />
     </div>
   </>

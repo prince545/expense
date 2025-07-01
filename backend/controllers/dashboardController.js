@@ -15,7 +15,7 @@ exports.getDashboardData = async (req, res) => {
 
     // Total Income
     const totalIncome = await Income.aggregate([
-      { $match: { user: userObjectId } },
+      { $match: { userId: userObjectId } },
       { $group: { _id: null, total: { $sum: "$amount" } } }
     ]);
 
@@ -27,7 +27,7 @@ exports.getDashboardData = async (req, res) => {
 
     // Income Transactions in the Last 60 Days
     const last60DaysIncomeTransactions = await Income.find({
-      user: userObjectId,
+      userId: userObjectId,
       date: { $gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) }
     }).sort({ date: -1 });
 
@@ -51,7 +51,7 @@ exports.getDashboardData = async (req, res) => {
 
     // Recent 5 Transactions (Income + Expense)
     const lastTransactions = [
-      ...(await Income.find({ user: userObjectId }).sort({ date: -1 }).limit(5)).map(txn => ({
+      ...(await Income.find({ userId: userObjectId }).sort({ date: -1 }).limit(5)).map(txn => ({
         ...txn.toObject(),
         type: "income"
       })),

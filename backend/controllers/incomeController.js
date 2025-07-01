@@ -62,7 +62,7 @@
 //   deleteIncome,
 //   downloadIncomeExcel
 // };
-const Income = require("../models/income"); // Adjust path if needed
+const Income = require("../models/Income");
 
 const xlsx = require('xlsx');
 // ✅ Add Income

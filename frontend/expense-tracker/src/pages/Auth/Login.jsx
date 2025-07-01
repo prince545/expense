@@ -1,6 +1,9 @@
  import React, { useState } from 'react';
 import AuthLayout from '../../components/layouts/AuthLayout';
 import { useNavigate } from 'react-router-dom';
+import { API_PATHS } from '../../utils/apiPaths';
+import axiosInstance from '../../utils/axiosinstance';
+import { toast } from 'react-hot-toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,27 +11,30 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Fetch mock users from localStorage
-    const users = JSON.parse(localStorage.getItem('mockUsers') || '[]');
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email,
+        password
+      });
 
-    // Check credentials
-    const matchedUser = users.find((u) => u.email === email && u.password === password);
+      // Save token and user data
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify({
+        id: response.data.id,
+        fullName: response.data.fullName,
+        email: response.data.email
+      }));
 
-    if (!matchedUser) {
-      setError('Invalid email or password');
-      return;
+      toast.success('Login successful!');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Login failed. Please try again.');
     }
-
-    // Simulate login by saving token
-localStorage.setItem('token', 'mock-token');
-
-
-    // Navigate to dashboard
-    navigate('/dashboard');
   };
 
   return (
