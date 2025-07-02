@@ -1,14 +1,36 @@
-import React from "react";
+import React, { useState } from 'react';
 import Navbar from "./Navbar";
 import SideMenu from "./SideMenu";
 
 const DashboardLayout = ({ children, activeMenu }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar activeMenu={activeMenu} />
-      <div className="flex flex-1">
-        <SideMenu activeMenu={activeMenu} />
-        <main className="flex-1 p-5 bg-white">{children}</main>
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar */}
+      <div className="relative">
+        <SideMenu 
+          activeMenu={activeMenu} 
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+        />
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Navbar */}
+        <Navbar onMobileMenuToggle={handleMobileMenuToggle} />
+        
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

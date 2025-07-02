@@ -5,7 +5,7 @@ import { EXPENSES, EXPENSES_DOWNLOAD } from '../../../utils/apiPaths';
 import axiosInstance from '../../../utils/axiosinstance';
 import { addThousandsSeparator } from '../../../utils/helper';
 import { toast } from 'react-hot-toast';
-import { LuTrash2, LuDownload, LuPlus } from 'react-icons/lu';
+import { LuTrash2, LuDownload, LuPlus, LuTrendingDown, LuCalendar, LuDollarSign } from 'react-icons/lu';
 import moment from 'moment';
 
 const Expense = () => {
@@ -14,20 +14,21 @@ const Expense = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
+    category: '',
     amount: '',
-    category: 'Food',
     date: new Date().toISOString().split('T')[0],
-    note: ''
+    icon: '💸'
   });
 
-  const categories = [
-    { value: 'Food', label: '🍕 Food' },
-    { value: 'Transport', label: '🚗 Transport' },
-    { value: 'Utilities', label: '⚡ Utilities' },
-    { value: 'Health', label: '🏥 Health' },
-    { value: 'Entertainment', label: '🎬 Entertainment' },
-    { value: 'Other', label: '📦 Other' }
+  const expenseCategories = [
+    { value: 'Food', label: '🍕 Food', color: 'from-orange-500 to-orange-600' },
+    { value: 'Transport', label: '🚗 Transport', color: 'from-blue-500 to-blue-600' },
+    { value: 'Shopping', label: '🛍️ Shopping', color: 'from-pink-500 to-pink-600' },
+    { value: 'Bills', label: '📄 Bills', color: 'from-red-500 to-red-600' },
+    { value: 'Entertainment', label: '🎬 Entertainment', color: 'from-purple-500 to-purple-600' },
+    { value: 'Health', label: '🏥 Health', color: 'from-green-500 to-green-600' },
+    { value: 'Education', label: '📚 Education', color: 'from-indigo-500 to-indigo-600' },
+    { value: 'Other', label: '📦 Other', color: 'from-gray-500 to-gray-600' }
   ];
 
   useEffect(() => {
@@ -58,11 +59,10 @@ const Expense = () => {
       await axiosInstance.post(`${EXPENSES}/add`, formData);
       toast.success('Expense added successfully!');
       setFormData({
-        title: '',
+        category: '',
         amount: '',
-        category: 'Food',
         date: new Date().toISOString().split('T')[0],
-        note: ''
+        icon: '💸'
       });
       setShowForm(false);
       fetchExpenses();
@@ -95,35 +95,42 @@ const Expense = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'expenses.xlsx');
+      link.setAttribute('download', 'expense.xlsx');
       document.body.appendChild(link);
       link.click();
       link.remove();
-      toast.success('Expenses downloaded successfully!');
+      toast.success('Expense data downloaded successfully!');
     } catch (error) {
-      console.error('Error downloading expenses:', error);
-      toast.error('Failed to download expenses');
+      console.error('Error downloading expense:', error);
+      toast.error('Failed to download expense data');
     }
   };
 
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const thisMonthExpense = expenses
+    .filter(expense => moment(expense.date).isSame(moment(), 'month'))
+    .reduce((sum, expense) => sum + expense.amount, 0);
 
   return (
     <DashboardLayout activeMenu="Expense">
-      <div className="my-5 mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Expense Management</h1>
+      <div className="space-y-6">
+        {/* Header Section */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Expense Management</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Track and manage your expenses</p>
+          </div>
           <div className="flex gap-3">
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <LuDownload size={18} />
               Download Excel
             </button>
             <button
               onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <LuPlus size={18} />
               Add Expense
@@ -131,62 +138,79 @@ const Expense = () => {
           </div>
         </div>
 
-        {/* Summary Card */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Total Expenses</h2>
-          <p className="text-2xl font-bold text-red-600">${addThousandsSeparator(totalExpenses)}</p>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border border-red-200 dark:border-red-700 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <LuTrendingDown className="text-white text-2xl" />
+              </div>
+              <div>
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium">Total Expenses</p>
+                <h2 className="text-2xl font-bold text-red-800 dark:text-red-200">
+                  ${addThousandsSeparator(totalExpense)}
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-700 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                <LuCalendar className="text-white text-2xl" />
+              </div>
+              <div>
+                <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">This Month</p>
+                <h2 className="text-2xl font-bold text-orange-800 dark:text-orange-200">
+                  ${addThousandsSeparator(thisMonthExpense)}
+                </h2>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Add Expense Form */}
         {showForm && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Add New Expense</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg animate-slide-up">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Add New Expense</h3>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                    placeholder="Enter expense title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value)})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Category
                   </label>
                   <select
+                    required
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-300"
                   >
-                    {categories.map(cat => (
-                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    <option value="">Select expense category</option>
+                    {expenseCategories.map(category => (
+                      <option key={category.value} value={category.value}>{category.label}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Amount
+                  </label>
+                  <div className="relative">
+                    <LuDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={formData.amount}
+                      onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value)})}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-300"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Date
                   </label>
                   <input
@@ -194,33 +218,33 @@ const Expense = () => {
                     required
                     value={formData.date}
                     onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-300"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Note (Optional)
-                </label>
-                <textarea
-                  value={formData.note}
-                  onChange={(e) => setFormData({...formData, note: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                  rows="3"
-                  placeholder="Add a note about this expense..."
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Icon
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.icon}
+                    onChange={(e) => setFormData({...formData, icon: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-300"
+                    placeholder="💸"
+                  />
+                </div>
               </div>
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  className="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   Add Expense
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  className="px-6 py-3 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-300"
                 >
                   Cancel
                 </button>
@@ -230,44 +254,62 @@ const Expense = () => {
         )}
 
         {/* Expenses List */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold">Recent Expenses</h3>
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Expenses</h3>
           </div>
           
           {loading ? (
-            <div className="p-6 text-center text-gray-500">Loading expenses...</div>
+            <div className="p-12 text-center">
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-gray-600 dark:text-gray-400 text-lg">Loading expenses...</span>
+              </div>
+            </div>
           ) : expenses.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">No expenses found. Add your first expense!</div>
+            <div className="p-12 text-center">
+              <div className="text-gray-400 dark:text-gray-500 text-6xl mb-4 animate-bounce-gentle">💸</div>
+              <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">No expense records found</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mb-6">
+                Start tracking your expenses by adding your first expense record
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                Add Your First Expense
+              </button>
+            </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {expenses.map((expense) => (
-                <div key={expense._id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl">
-                      {categories.find(cat => cat.value === expense.category)?.label.split(' ')[0] || '📦'}
+                <div key={expense._id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-white text-xl">
+                          {expense.icon || '💸'}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-lg">{expense.category}</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {moment(expense.date).format('MMM DD, YYYY')}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">{expense.title}</h4>
-                      <p className="text-sm text-gray-500">
-                        {expense.category} • {moment(expense.date).format('MMM DD, YYYY')}
-                      </p>
-                      {expense.note && (
-                        <p className="text-sm text-gray-600 mt-1">{expense.note}</p>
-                      )}
+                    <div className="flex items-center gap-4">
+                      <span className="text-xl font-bold text-red-600 dark:text-red-400">
+                        -${addThousandsSeparator(expense.amount)}
+                      </span>
+                      <button
+                        onClick={() => handleDelete(expense._id)}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-300"
+                        title="Delete expense"
+                      >
+                        <LuTrash2 size={18} />
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-lg font-semibold text-red-600">
-                      -${addThousandsSeparator(expense.amount)}
-                    </span>
-                    <button
-                      onClick={() => handleDelete(expense._id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete expense"
-                    >
-                      <LuTrash2 size={18} />
-                    </button>
                   </div>
                 </div>
               ))}
