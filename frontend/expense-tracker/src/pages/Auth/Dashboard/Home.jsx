@@ -10,6 +10,10 @@ import { IoMdCard } from "react-icons/io";
 import { addThousandsSeparator } from "../../../utils/helper";
 import RecentTransactions from "../../../components/Dashboard/RescentTransactions";
 import { toast } from 'react-hot-toast';
+import DailyIncomeBarChart from '../../../components/Dashboard/DailyIncomeBarChart';
+import DailyExpenseBarChart from '../../../components/Dashboard/DailyExpenseBarChart';
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
+import moment from 'moment';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -84,6 +88,39 @@ const Home = () => {
     }
   };
 
+  // Helper to get last 60 days data
+  const getLast60Days = (arr, type) => {
+    const cutoff = moment().subtract(60, 'days');
+    return (arr || []).filter(item => moment(item.date).isAfter(cutoff) && (!type || item.type === type));
+  };
+
+  // Prepare mock or real data for charts
+  const incomes = dashboardData?.incomes || [
+    { amount: 6500, source: 'Business Income', date: moment().subtract(1, 'days').toISOString(), icon: '🏢' },
+    { amount: 5600, source: 'Salary', date: moment().subtract(2, 'days').toISOString(), icon: '💵' },
+    { amount: 4300, source: 'Interest From Saving Account', date: moment().subtract(2, 'days').toISOString(), icon: '🏦' },
+  ];
+  const expenses = dashboardData?.expenses || [
+    { amount: 120, category: 'Food', date: moment().subtract(1, 'days').toISOString(), icon: '🍕' },
+    { amount: 50, category: 'Transport', date: moment().subtract(2, 'days').toISOString(), icon: '🚗' },
+    { amount: 200, category: 'Shopping', date: moment().subtract(3, 'days').toISOString(), icon: '🛍️' },
+  ];
+
+  // Pie chart data for last 60 days
+  const incomePieData = Object.values(getLast60Days(incomes).reduce((acc, curr) => {
+    const key = curr.source || 'Other';
+    acc[key] = acc[key] || { name: key, value: 0 };
+    acc[key].value += curr.amount;
+    return acc;
+  }, {}));
+  const expensePieData = Object.values(getLast60Days(expenses).reduce((acc, curr) => {
+    const key = curr.category || 'Other';
+    acc[key] = acc[key] || { name: key, value: 0 };
+    acc[key].value += curr.amount;
+    return acc;
+  }, {}));
+  const COLORS = ['#6366f1', '#ef4444', '#f59e42', '#22c55e', '#a855f7', '#fbbf24', '#3b82f6', '#eab308'];
+
   return (
     <DashboardLayout activeMenu="Dashboard">
       <div className="space-y-6">
@@ -117,6 +154,46 @@ const Home = () => {
           </div>
         ) : (
           <>
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Income Donut Chart */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow flex flex-col items-center">
+                <h3 className="font-bold mb-2">Last 60 Days Income</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie data={incomePieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#6366f1" label>
+                      {incomePieData.map((entry, index) => (
+                        <Cell key={`cell-income-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={v => `+$${v}`} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="text-xl font-bold mt-2">${addThousandsSeparator(incomePieData.reduce((sum, d) => sum + d.value, 0))}</div>
+              </div>
+              {/* Expense Donut Chart */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow flex flex-col items-center">
+                <h3 className="font-bold mb-2">Last 60 Days Expenses</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie data={expensePieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#ef4444" label>
+                      {expensePieData.map((entry, index) => (
+                        <Cell key={`cell-expense-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={v => `-$${v}`} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="text-xl font-bold mt-2">${addThousandsSeparator(expensePieData.reduce((sum, d) => sum + d.value, 0))}</div>
+              </div>
+            </div>
+            {/* Daily Bar Charts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <DailyIncomeBarChart incomes={incomes} />
+              <DailyExpenseBarChart expenses={expenses} />
+            </div>
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">

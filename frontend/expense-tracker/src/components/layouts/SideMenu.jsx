@@ -16,14 +16,13 @@ import {
   LuX
 } from "react-icons/lu";
 
-const SideMenu = ({ activeMenu, isMobileMenuOpen, setIsMobileMenuOpen }) => {
+const SideMenu = ({ activeMenu, isMobileMenuOpen, setIsMobileMenuOpen, isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const fileInputRef = useRef(null);
   const [avatar, setAvatar] = useState(null);
   const [user, setUser] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     // Get user data from localStorage
@@ -99,120 +98,30 @@ const SideMenu = ({ activeMenu, isMobileMenuOpen, setIsMobileMenuOpen }) => {
             {isCollapsed ? <LuChevronRight size={16} /> : <LuChevronLeft size={16} />}
           </button>
 
-          {/* User Profile Section */}
-          <div className="relative mb-8">
-            <div 
-              className={`flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 cursor-pointer hover:shadow-md transition-all duration-300 group ${
-                isCollapsed ? 'justify-center' : ''
-              }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                !isCollapsed && setShowUserMenu(!showUserMenu);
-              }}
-            >
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center overflow-hidden border-2 border-white dark:border-gray-600 shadow-lg group-hover:scale-105 transition-transform duration-300">
-                  {avatar ? (
-                    <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-white font-bold text-sm">
-                      {user ? getInitials(user.fullName) : 'U'}
-                    </span>
-                  )}
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-600"></div>
-              </div>
-              {!isCollapsed && (
-                <>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
-                      {user ? user.fullName : 'User'}
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {user ? user.email : 'user@example.com'}
-                    </p>
-                  </div>
-                  <LuChevronRight 
-                    size={16} 
-                    className={`text-gray-400 transition-transform duration-300 ${showUserMenu ? 'rotate-90' : ''}`}
-                  />
-                </>
-              )}
+          {/* Decorative Element */}
+          {!isCollapsed && (
+            <div className="my-6 flex flex-col items-center">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-primary-500 via-pink-400 to-yellow-400 mb-2 animate-pulse"></div>
+              <span className="text-xs text-gray-500 italic">Keep crushing your goals! 🚀</span>
             </div>
-
-            {/* User Menu Dropdown */}
-            {showUserMenu && !isCollapsed && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-700 rounded-xl shadow-lg border border-gray-200 dark:border-gray-600 z-10 animate-slide-up">
-                <div className="p-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleImageClick();
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                  >
-                    <LuUser size={16} />
-                    Change Photo
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleTheme();
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                  >
-                    {isDark ? <LuSun size={16} /> : <LuMoon size={16} />}
-                    {isDark ? 'Light Mode' : 'Dark Mode'}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                  >
-                    <LuSettings size={16} />
-                    Settings
-                  </button>
-                  <hr className="my-2 border-gray-200 dark:border-gray-600" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLogout();
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                  >
-                    <LuLogOut size={16} />
-                    Logout
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileChange}
-          />
+          )}
 
           {/* Navigation Menu */}
           <nav className="space-y-2">
             {SIDE_MENU_DATA.map((item, index) => (
-                          <button
-              key={`menu_${index}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClick(item.path);
-              }}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-left transition-all duration-300 group ${
-                activeMenu === item.label
-                  ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-              } ${isCollapsed ? 'justify-center' : ''}`}
-              title={isCollapsed ? item.label : ''}
-            >
+              <button
+                key={`menu_${index}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClick(item.path);
+                }}
+                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-left transition-all duration-300 group ${
+                  activeMenu === item.label
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                } ${isCollapsed ? 'justify-center' : ''}`}
+                title={isCollapsed ? item.label : ''}
+              >
                 <div className={`p-2 rounded-lg transition-all duration-300 ${
                   activeMenu === item.label
                     ? 'bg-white/20'
@@ -262,8 +171,6 @@ const SideMenu = ({ activeMenu, isMobileMenuOpen, setIsMobileMenuOpen }) => {
           </div>
         </div>
       </div>
-
-
 
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (

@@ -5,9 +5,9 @@ import { EXPENSES, EXPENSES_DOWNLOAD } from '../../../utils/apiPaths';
 import axiosInstance from '../../../utils/axiosinstance';
 import { addThousandsSeparator } from '../../../utils/helper';
 import { toast } from 'react-hot-toast';
-import { LuTrash2, LuDownload, LuPlus, LuTrendingDown, LuCalendar, LuDollarSign } from 'react-icons/lu';
+import { LuTrash2, LuDownload, LuPlus, LuTrendingDown, LuCalendar, LuDollarSign, LuChevronRight, LuChevronLeft } from 'react-icons/lu';
 import moment from 'moment';
-import DailyExpenseBarChart from '../../../components/Dashboard/DailyExpenseBarChart';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const Expense = () => {
   const navigate = useNavigate();
@@ -20,6 +20,7 @@ const Expense = () => {
     date: new Date().toISOString().split('T')[0],
     icon: '💸'
   });
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const expenseCategories = [
     { value: 'Food', label: '🍕 Food', color: 'from-orange-500 to-orange-600' },
@@ -112,6 +113,14 @@ const Expense = () => {
     }
   };
 
+  // Prepare data for line chart: group by date and sum
+  const dailyData = Object.values(expenses.reduce((acc, expense) => {
+    const date = moment(expense.date).format('YYYY-MM-DD');
+    acc[date] = acc[date] || { date, total: 0 };
+    acc[date].total += expense.amount;
+    return acc;
+  }, {})).sort((a, b) => new Date(a.date) - new Date(b.date));
+
   const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const thisMonthExpense = expenses
     .filter(expense => moment(expense.date).isSame(moment(), 'month'))
@@ -120,64 +129,37 @@ const Expense = () => {
   return (
     <DashboardLayout activeMenu="Expense">
       <div className="space-y-6">
-        {/* Header Section */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Expense Management</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Track and manage your expenses</p>
-          </div>
-          <div className="flex gap-3">
+        {/* Expense Overview Line Chart */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Expense Overview</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Track your spending trends over time and gain insights into where your money goes.</p>
+            </div>
             <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <LuDownload size={18} />
-              Download Excel
-            </button>
-            <button
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => setShowForm(true)}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <LuPlus size={18} />
               Add Expense
             </button>
           </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={dailyData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tickFormatter={d => moment(d).format('D MMM')} />
+              <YAxis />
+              <Tooltip formatter={v => `-$${v}`} labelFormatter={d => moment(d).format('Do MMM YYYY')} />
+              <Line type="monotone" dataKey="total" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 7 }} fillOpacity={1} fill="url(#colorExpense)" />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
-
-        {/* Daily Expense Bar Chart */}
-        <DailyExpenseBarChart expenses={expenses} />
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border border-red-200 dark:border-red-700 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                <LuTrendingDown className="text-white text-2xl" />
-              </div>
-              <div>
-                <p className="text-sm text-red-600 dark:text-red-400 font-medium">Total Expenses</p>
-                <h2 className="text-2xl font-bold text-red-800 dark:text-red-200">
-                  ${addThousandsSeparator(totalExpense)}
-                </h2>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-700 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                <LuCalendar className="text-white text-2xl" />
-              </div>
-              <div>
-                <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">This Month</p>
-                <h2 className="text-2xl font-bold text-orange-800 dark:text-orange-200">
-                  ${addThousandsSeparator(thisMonthExpense)}
-                </h2>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Add Expense Form */}
         {showForm && (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg animate-slide-up">
@@ -262,13 +244,11 @@ const Expense = () => {
             </form>
           </div>
         )}
-
         {/* Expenses List */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Expenses</h3>
           </div>
-          
           {loading ? (
             <div className="p-12 text-center">
               <div className="flex items-center justify-center gap-3">

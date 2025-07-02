@@ -14,7 +14,7 @@ import {
   LuLogOut
 } from 'react-icons/lu';
 
-const Navbar = ({ onMobileMenuToggle }) => {
+const Navbar = ({ onMobileMenuToggle, showMotivation }) => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
@@ -56,17 +56,14 @@ const Navbar = ({ onMobileMenuToggle }) => {
             >
               <LuMenu size={20} />
             </button>
-
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-sm">💰</span>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Expense Tracker</h1>
-              </div>
-            </div>
           </div>
+          {/* Decorative Element if sidebar is collapsed */}
+          {showMotivation && (
+            <div className="flex flex-col items-center mx-6">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-primary-500 via-pink-400 to-yellow-400 mb-1 animate-pulse"></div>
+              <span className="text-xs text-gray-500 italic whitespace-nowrap">Keep crushing your goals! 🚀</span>
+            </div>
+          )}
 
           {/* Center Section - Search */}
           <div className="flex-1 max-w-md mx-4 hidden md:block">
@@ -119,29 +116,29 @@ const Navbar = ({ onMobileMenuToggle }) => {
                     </span>
                   )}
                 </div>
-                <div className="hidden sm:block text-left">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {user ? user.fullName : 'User'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {user ? user.email : 'user@example.com'}
-                  </p>
-                </div>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white hidden sm:block">
+                  {user ? user.fullName : 'User'}
+                </span>
               </button>
 
               {/* User Dropdown Menu */}
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-600 z-50 animate-slide-up">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-600 z-50 animate-slide-up">
                   <div className="p-2">
-                    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-600">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-600 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center overflow-hidden border-2 border-white dark:border-gray-600 shadow-lg">
+                        {user?.profilePic ? (
+                          <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white font-bold text-sm">
+                            {user ? user.fullName?.charAt(0).toUpperCase() : 'U'}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         {user ? user.fullName : 'User'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user ? user.email : 'user@example.com'}
-                      </p>
+                      </span>
                     </div>
-                    
                     <div className="py-1">
                       <button
                         onClick={() => navigate('/upload-image')}
@@ -157,7 +154,6 @@ const Navbar = ({ onMobileMenuToggle }) => {
                         Settings
                       </button>
                     </div>
-                    
                     <div className="border-t border-gray-200 dark:border-gray-600 pt-1">
                       <button
                         onClick={handleLogout}
