@@ -244,6 +244,22 @@ const Expense = () => {
             </form>
           </div>
         )}
+        {/* Download Excel Section */}
+        <div className="bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/20 dark:to-orange-800/20 border border-red-200 dark:border-red-700 rounded-2xl p-6 shadow-lg flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-red-800 dark:text-red-200 mb-1 flex items-center gap-2">
+              <LuDownload size={20} /> Download Expenses
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Export your expense data as an Excel file for offline analysis or sharing.</p>
+          </div>
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl hover:from-red-600 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            <LuDownload size={18} />
+            Download Excel
+          </button>
+        </div>
         {/* Expenses List */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
