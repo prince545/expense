@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const expenseSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, "Expense title is required"],
+    required: false,
   },
   amount: {
     type: Number,
@@ -12,7 +12,11 @@ const expenseSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ["Food", "Transport", "Utilities", "Health", "Entertainment", "Other"],
+    enum: ["Food", "Transport", "Shopping", "Bills", "Entertainment", "Health", "Education", "Other"],
+  },
+  icon: {
+    type: String,
+    default: "💸",
   },
   date: {
     type: Date,

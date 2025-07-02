@@ -55,8 +55,13 @@ const Expense = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Only convert to number if not empty
+    const payload = {
+      ...formData,
+      amount: formData.amount === "" ? 0 : parseFloat(formData.amount)
+    };
     try {
-      await axiosInstance.post(`${EXPENSES}/add`, formData);
+      await axiosInstance.post(`${EXPENSES}/add`, payload);
       toast.success('Expense added successfully!');
       setFormData({
         category: '',
@@ -203,7 +208,7 @@ const Expense = () => {
                       min="0"
                       step="0.01"
                       value={formData.amount}
-                      onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value)})}
+                      onChange={e => setFormData({ ...formData, amount: e.target.value })}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-300"
                       placeholder="0.00"
                     />
@@ -237,6 +242,7 @@ const Expense = () => {
               <div className="flex gap-3">
                 <button
                   type="submit"
+                  disabled={!formData.amount || isNaN(parseFloat(formData.amount))}
                   className="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   Add Expense

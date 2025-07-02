@@ -10,15 +10,15 @@ const addExpense = async (req, res) => {
 
     const { icon, category, title, amount, date } = req.body;
 
-    if (!category || !title || !amount || !date) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!category || !amount || !date) {
+      return res.status(400).json({ message: "Category, amount, and date are required" });
     }
 
     const newExpense = new Expense({
       user: req.user.id,
       icon,
       category,
-      title,
+      title: title || category,
       amount,
       date: new Date(date)
     });
