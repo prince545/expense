@@ -7,6 +7,7 @@ import { addThousandsSeparator } from '../../../utils/helper';
 import { toast } from 'react-hot-toast';
 import { LuTrash2, LuDownload, LuPlus, LuTrendingUp, LuCalendar, LuDollarSign } from 'react-icons/lu';
 import moment from 'moment';
+import DailyIncomeBarChart from '../../../components/Dashboard/DailyIncomeBarChart';
 
 const Income = () => {
   const navigate = useNavigate();
@@ -135,6 +136,9 @@ const Income = () => {
             </button>
           </div>
         </div>
+
+        {/* Daily Income Bar Chart */}
+        <DailyIncomeBarChart incomes={incomes} />
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
