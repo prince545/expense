@@ -17,10 +17,23 @@ const app = express();
 connectDB();
 
 // ✅ CORS Middleware
+const allowedOrigins = [
+  process.env.CLIENT_URL || "http://localhost:5173",
+  process.env.PROD_CLIENT_URL || "https://expense-y324.vercel.app"
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || "*",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
 // ✅ JSON Body Parser
