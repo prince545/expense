@@ -38,11 +38,23 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    // Simple test login - accept any credentials
+    console.log(`🧪 TEST LOGIN: Attempting login for email: ${email}`);
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    // If user doesn't exist, create a test user
+    if (!user) {
+      console.log(`🧪 TEST LOGIN: Creating new test user for email: ${email}`);
+      user = await User.create({
+        fullName: email.split('@')[0] || 'Test User', // Use part before @ as name
+        email: email,
+        password: 'testpassword123' // Set a default test password
+      });
     }
 
+    // Generate and return token (same as before)
     res.status(200).json({
       id: user._id,
       fullName: user.fullName,
@@ -51,6 +63,7 @@ exports.loginUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (err) {
+    console.error(`🧪 TEST LOGIN ERROR: ${err.message}`);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
